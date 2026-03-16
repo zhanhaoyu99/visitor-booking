@@ -1,23 +1,15 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Service } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-async function loadServices(): Promise<Service[]> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("services")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order");
-  return data ?? [];
-}
-
 export default async function HomePage() {
-  const services = await loadServices();
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: "asc" },
+  });
 
   return (
     <main className="min-h-screen bg-muted/30">

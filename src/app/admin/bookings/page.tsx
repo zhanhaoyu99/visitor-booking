@@ -171,11 +171,11 @@ export default function AdminBookingsPage() {
             ) : (
               bookings.map((b) => (
                 <TableRow key={b.id}>
-                  <TableCell className="font-mono text-xs">{b.booking_code}</TableCell>
+                  <TableCell className="font-mono text-xs">{b.bookingCode}</TableCell>
                   <TableCell>{b.services?.name}</TableCell>
-                  <TableCell>{b.booking_date}</TableCell>
+                  <TableCell>{b.bookingDate}</TableCell>
                   <TableCell>
-                    {b.start_time.slice(0, 5)}-{b.end_time.slice(0, 5)}
+                    {b.startTime.slice(0, 5)}-{b.endTime.slice(0, 5)}
                   </TableCell>
                   <TableCell>{b.name}</TableCell>
                   <TableCell>{b.phone}</TableCell>

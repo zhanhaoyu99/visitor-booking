@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const phone = request.nextUrl.searchParams.get("phone");
@@ -9,20 +9,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "请提供手机号或预约编号" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-  let query = supabase
-    .from("bookings")
-    .select("*, services(name)")
-    .order("booking_date", { ascending: false });
+  const data = await prisma.booking.findMany({
+    where: code ? { bookingCode: code } : { phone: phone! },
+    include: { service: { select: { name: true } } },
+    orderBy: { bookingDate: "desc" },
+  });
 
-  if (code) {
-    query = query.eq("booking_code", code);
-  } else if (phone) {
-    query = query.eq("phone", phone);
-  }
+  // Map to match frontend expectations: { services: { name } }
+  const result = data.map((b) => ({
+    ...b,
+    services: { name: b.service.name },
+    service: undefined,
+  }));
 
-  const { data, error } = await query;
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  return NextResponse.json(result);
 }

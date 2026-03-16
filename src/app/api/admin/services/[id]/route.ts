@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { adminGuard } from "@/lib/admin-guard";
 
 export async function PUT(
@@ -11,21 +11,15 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
-    .from("services")
-    .update({
+  const data = await prisma.service.update({
+    where: { id },
+    data: {
       name: body.name,
       description: body.description || null,
-      is_active: body.is_active,
-      sort_order: body.sort_order,
-    })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      isActive: body.is_active,
+      sortOrder: body.sort_order,
+    },
+  });
   return NextResponse.json(data);
 }
 
@@ -37,9 +31,6 @@ export async function DELETE(
   if (denied) return denied;
 
   const { id } = await params;
-  const supabase = createAdminClient();
-
-  const { error } = await supabase.from("services").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await prisma.service.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

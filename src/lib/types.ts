@@ -2,34 +2,34 @@ export interface Service {
   id: string;
   name: string;
   description: string | null;
-  is_active: boolean;
-  sort_order: number;
-  created_at: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
 }
 
 export interface TimeSlotTemplate {
   id: string;
-  service_id: string;
-  day_of_week: number; // 0=Sunday, 6=Saturday
-  start_time: string; // HH:mm
-  end_time: string; // HH:mm
+  serviceId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
   capacity: number;
 }
 
 export interface SpecialDate {
   id: string;
-  service_id: string;
-  date: string; // YYYY-MM-DD
-  is_closed: boolean;
+  serviceId: string;
+  date: string;
+  isClosed: boolean;
   note: string | null;
 }
 
 export interface DateSlotOverride {
   id: string;
-  service_id: string;
-  date: string; // YYYY-MM-DD
-  start_time: string;
-  end_time: string;
+  serviceId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   capacity: number;
 }
 
@@ -37,17 +37,17 @@ export type BookingStatus = "confirmed" | "cancelled";
 
 export interface Booking {
   id: string;
-  booking_code: string;
-  service_id: string;
-  booking_date: string;
-  start_time: string;
-  end_time: string;
+  bookingCode: string;
+  serviceId: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
   name: string;
   phone: string;
-  id_number: string | null;
+  idNumber: string | null;
   note: string | null;
   status: BookingStatus;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface TimeSlot {

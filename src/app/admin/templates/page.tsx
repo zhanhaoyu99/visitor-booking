@@ -15,7 +15,7 @@ export default function TemplatesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
   const [templates, setTemplates] = useState<TimeSlotTemplate[]>([]);
-  const [newSlot, setNewSlot] = useState({ start_time: "09:00", end_time: "10:00", capacity: 10 });
+  const [newSlot, setNewSlot] = useState({ startTime: "09:00", endTime: "10:00", capacity: 10 });
   const [activeDay, setActiveDay] = useState("1");
 
   useEffect(() => {
@@ -41,7 +41,9 @@ export default function TemplatesPage() {
       body: JSON.stringify({
         service_id: selectedServiceId,
         day_of_week: parseInt(activeDay),
-        ...newSlot,
+        start_time: newSlot.startTime,
+        end_time: newSlot.endTime,
+        capacity: newSlot.capacity,
       }),
     });
     if (res.ok) {
@@ -61,7 +63,7 @@ export default function TemplatesPage() {
     }
   }
 
-  const dayTemplates = templates.filter((t) => t.day_of_week === parseInt(activeDay));
+  const dayTemplates = templates.filter((t) => t.dayOfWeek === parseInt(activeDay));
 
   return (
     <div>
@@ -94,16 +96,16 @@ export default function TemplatesPage() {
                 <Label>开始时间</Label>
                 <Input
                   type="time"
-                  value={newSlot.start_time}
-                  onChange={(e) => setNewSlot((s) => ({ ...s, start_time: e.target.value }))}
+                  value={newSlot.startTime}
+                  onChange={(e) => setNewSlot((s) => ({ ...s, startTime: e.target.value }))}
                 />
               </div>
               <div>
                 <Label>结束时间</Label>
                 <Input
                   type="time"
-                  value={newSlot.end_time}
-                  onChange={(e) => setNewSlot((s) => ({ ...s, end_time: e.target.value }))}
+                  value={newSlot.endTime}
+                  onChange={(e) => setNewSlot((s) => ({ ...s, endTime: e.target.value }))}
                 />
               </div>
               <div>
@@ -126,7 +128,7 @@ export default function TemplatesPage() {
                   <Card key={t.id}>
                     <CardContent className="flex items-center justify-between p-3">
                       <span>
-                        {t.start_time.slice(0, 5)} - {t.end_time.slice(0, 5)}，容量 {t.capacity}
+                        {t.startTime.slice(0, 5)} - {t.endTime.slice(0, 5)}，容量 {t.capacity}
                       </span>
                       <Button variant="destructive" size="sm" onClick={() => handleDelete(t.id)}>
                         删除

@@ -128,11 +128,11 @@ export default function QueryPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(booking.booking_date), "yyyy年M月d日")}{" "}
-                      {booking.start_time.slice(0, 5)} - {booking.end_time.slice(0, 5)}
+                      {format(new Date(booking.bookingDate), "yyyy年M月d日")}{" "}
+                      {booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      预约编号：{booking.booking_code}
+                      预约编号：{booking.bookingCode}
                     </p>
                   </div>
                   {booking.status === "confirmed" && (

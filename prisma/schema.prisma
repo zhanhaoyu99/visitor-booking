@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Service {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  bookings          Booking[]
+  timeSlotTemplates TimeSlotTemplate[]
+  specialDates      SpecialDate[]
+  dateSlotOverrides DateSlotOverride[]
+
+  @@map("services")
+}
+
+model TimeSlotTemplate {
+  id        String @id @default(uuid()) @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+  capacity  Int
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("time_slot_templates")
+}
+
+model SpecialDate {
+  id        String  @id @default(uuid()) @db.Uuid
+  serviceId String  @map("service_id") @db.Uuid
+  date      String
+  isClosed  Boolean @default(true) @map("is_closed")
+  note      String?
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, date])
+  @@map("special_dates")
+}
+
+model DateSlotOverride {
+  id        String @id @default(uuid()) @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  date      String
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+  capacity  Int
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("date_slot_overrides")
+}
+
+model Booking {
+  id          String   @id @default(uuid()) @db.Uuid
+  bookingCode String   @unique @map("booking_code")
+  serviceId   String   @map("service_id") @db.Uuid
+  bookingDate String   @map("booking_date")
+  startTime   String   @map("start_time")
+  endTime     String   @map("end_time")
+  name        String
+  phone       String
+  idNumber    String?  @map("id_number")
+  note        String?
+  status      String   @default("confirmed")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([bookingDate, serviceId, status])
+  @@index([bookingCode])
+  @@map("bookings")
+}

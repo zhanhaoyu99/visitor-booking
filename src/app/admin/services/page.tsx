@@ -32,7 +32,7 @@ export default function ServicesPage() {
 
   function openEdit(s: Service) {
     setEditing(s);
-    setForm({ name: s.name, description: s.description || "", sort_order: s.sort_order, is_active: s.is_active });
+    setForm({ name: s.name, description: s.description || "", sort_order: s.sortOrder, is_active: s.isActive });
     setDialogOpen(true);
   }
 
@@ -80,8 +80,8 @@ export default function ServicesPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{s.name}</span>
-                  <Badge variant={s.is_active ? "default" : "secondary"}>
-                    {s.is_active ? "启用" : "停用"}
+                  <Badge variant={s.isActive ? "default" : "secondary"}>
+                    {s.isActive ? "启用" : "停用"}
                   </Badge>
                 </div>
                 {s.description && (

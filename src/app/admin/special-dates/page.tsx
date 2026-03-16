@@ -18,8 +18,8 @@ export default function SpecialDatesPage() {
   const [closedForm, setClosedForm] = useState({ date: "", note: "" });
   const [overrideForm, setOverrideForm] = useState({
     date: "",
-    start_time: "09:00",
-    end_time: "10:00",
+    startTime: "09:00",
+    endTime: "10:00",
     capacity: 10,
   });
 
@@ -76,7 +76,13 @@ export default function SpecialDatesPage() {
     const res = await fetch("/api/admin/date-overrides", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ service_id: selectedServiceId, ...overrideForm }),
+      body: JSON.stringify({
+        service_id: selectedServiceId,
+        date: overrideForm.date,
+        start_time: overrideForm.startTime,
+        end_time: overrideForm.endTime,
+        capacity: overrideForm.capacity,
+      }),
     });
     if (res.ok) {
       toast.success("已添加");
@@ -180,16 +186,16 @@ export default function SpecialDatesPage() {
               <Label>开始时间</Label>
               <Input
                 type="time"
-                value={overrideForm.start_time}
-                onChange={(e) => setOverrideForm((f) => ({ ...f, start_time: e.target.value }))}
+                value={overrideForm.startTime}
+                onChange={(e) => setOverrideForm((f) => ({ ...f, startTime: e.target.value }))}
               />
             </div>
             <div>
               <Label>结束时间</Label>
               <Input
                 type="time"
-                value={overrideForm.end_time}
-                onChange={(e) => setOverrideForm((f) => ({ ...f, end_time: e.target.value }))}
+                value={overrideForm.endTime}
+                onChange={(e) => setOverrideForm((f) => ({ ...f, endTime: e.target.value }))}
               />
             </div>
             <div>
@@ -213,7 +219,7 @@ export default function SpecialDatesPage() {
               {overrides.map((o) => (
                 <div key={o.id} className="flex items-center justify-between rounded border p-2">
                   <span>
-                    {o.date}：{o.start_time.slice(0, 5)} - {o.end_time.slice(0, 5)}，容量 {o.capacity}
+                    {o.date}：{o.startTime.slice(0, 5)} - {o.endTime.slice(0, 5)}，容量 {o.capacity}
                   </span>
                   <Button variant="destructive" size="sm" onClick={() => deleteOverride(o.id)}>
                     删除
