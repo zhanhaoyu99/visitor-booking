@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Booking, Service } from "@/lib/types";
 
@@ -26,6 +27,9 @@ export default function AdminBookingsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
+  const [selectedBooking, setSelectedBooking] = useState<BookingWithService | null>(null);
+
+  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
     service_id: "",
     status: "",
@@ -40,8 +44,10 @@ export default function AdminBookingsPage() {
   }, []);
 
   useEffect(() => {
-    loadBookings();
-  }, [page, filters]);
+    const timer = search ? setTimeout(loadBookings, 300) : undefined;
+    if (!search) loadBookings();
+    return () => clearTimeout(timer);
+  }, [page, filters, search]);
 
   async function loadBookings() {
     const params = new URLSearchParams();
@@ -51,6 +57,7 @@ export default function AdminBookingsPage() {
     if (filters.status) params.set("status", filters.status);
     if (filters.date_from) params.set("date_from", filters.date_from);
     if (filters.date_to) params.set("date_to", filters.date_to);
+    if (search.trim()) params.set("search", search.trim());
 
     const res = await fetch(`/api/admin/bookings?${params}`);
     const data = await res.json();
@@ -81,6 +88,22 @@ export default function AdminBookingsPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function handleCancelBooking(bookingId: string) {
+    if (!confirm("确定要取消该预约吗？")) return;
+    const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (!res.ok) {
+      toast.error("取消失败");
+      return;
+    }
+    toast.success("已取消预约");
+    setSelectedBooking(null);
+    loadBookings();
+  }
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -90,8 +113,20 @@ export default function AdminBookingsPage() {
         <Button variant="outline" onClick={handleExport}>导出 CSV</Button>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <div className="mb-4 flex flex-wrap gap-3">
+        <div>
+          <Label className="text-xs">搜索</Label>
+          <Input
+            placeholder="姓名或手机号"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-40"
+          />
+        </div>
         <div>
           <Label className="text-xs">服务</Label>
           <select
@@ -170,7 +205,11 @@ export default function AdminBookingsPage() {
               </TableRow>
             ) : (
               bookings.map((b) => (
-                <TableRow key={b.id}>
+                <TableRow
+                  key={b.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedBooking(b)}
+                >
                   <TableCell className="font-mono text-xs">{b.bookingCode}</TableCell>
                   <TableCell>{b.services?.name}</TableCell>
                   <TableCell>{b.bookingDate}</TableCell>
@@ -217,6 +256,69 @@ export default function AdminBookingsPage() {
           </div>
         </div>
       )}
+      {/* Booking detail dialog */}
+      <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>预约详情</DialogTitle>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="text-muted-foreground">预约编号</span>
+                  <p className="font-mono">{selectedBooking.bookingCode}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">状态</span>
+                  <p>
+                    <Badge variant={selectedBooking.status === "confirmed" ? "default" : "secondary"}>
+                      {selectedBooking.status === "confirmed" ? "已确认" : "已取消"}
+                    </Badge>
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">服务</span>
+                  <p>{selectedBooking.services?.name}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">日期时段</span>
+                  <p>{selectedBooking.bookingDate} {selectedBooking.startTime.slice(0, 5)}-{selectedBooking.endTime.slice(0, 5)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">姓名</span>
+                  <p>{selectedBooking.name}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">手机号</span>
+                  <p>{selectedBooking.phone}</p>
+                </div>
+                {selectedBooking.idNumber && (
+                  <div>
+                    <span className="text-muted-foreground">身份证号</span>
+                    <p>{selectedBooking.idNumber}</p>
+                  </div>
+                )}
+                {selectedBooking.note && (
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">备注</span>
+                    <p>{selectedBooking.note}</p>
+                  </div>
+                )}
+              </div>
+              {selectedBooking.status === "confirmed" && (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => handleCancelBooking(selectedBooking.id)}
+                >
+                  取消此预约
+                </Button>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

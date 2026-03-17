@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status");
   const dateFrom = searchParams.get("date_from");
   const dateTo = searchParams.get("date_to");
+  const search = searchParams.get("search");
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("page_size") || "20");
   const csvFormat = searchParams.get("format");
@@ -25,6 +26,15 @@ export async function GET(request: NextRequest) {
             ...(dateFrom ? { gte: dateFrom } : {}),
             ...(dateTo ? { lte: dateTo } : {}),
           },
+        }
+      : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { phone: { contains: search } },
+            { bookingCode: { contains: search } },
+          ],
         }
       : {}),
   };
