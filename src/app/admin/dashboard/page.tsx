@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Booking } from "@/lib/types";
+
+type BookingWithService = Booking & { services: { name: string } };
 
 interface Stats {
   todayCount: number;
@@ -11,30 +15,29 @@ interface Stats {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({ todayCount: 0, totalCount: 0, serviceCount: 0 });
+  const [todayBookings, setTodayBookings] = useState<BookingWithService[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const today = new Date().toISOString().split("T")[0];
 
-      const [bookingsRes, servicesRes] = await Promise.all([
+      const [bookingsRes, servicesRes, todayRes] = await Promise.all([
         fetch(`/api/admin/bookings?page_size=1&status=confirmed`),
         fetch("/api/admin/services"),
+        fetch(`/api/admin/bookings?page_size=50&status=confirmed&date_from=${today}&date_to=${today}`),
       ]);
 
       const bookings = await bookingsRes.json();
       const services = await servicesRes.json();
-
-      const todayRes = await fetch(
-        `/api/admin/bookings?page_size=1&status=confirmed&date_from=${today}&date_to=${today}`
-      );
-      const todayBookings = await todayRes.json();
+      const todayData = await todayRes.json();
 
       setStats({
-        todayCount: todayBookings.total ?? 0,
+        todayCount: todayData.total ?? 0,
         totalCount: bookings.total ?? 0,
         serviceCount: Array.isArray(services) ? services.length : 0,
       });
+      setTodayBookings(todayData.data ?? []);
       setLoading(false);
     }
     load();
@@ -65,6 +68,35 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Today's bookings */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-lg">今日预约列表</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-muted-foreground animate-pulse">加载中...</p>
+          ) : todayBookings.length === 0 ? (
+            <p className="text-muted-foreground">今日暂无预约</p>
+          ) : (
+            <div className="space-y-2">
+              {todayBookings.map((b) => (
+                <div key={b.id} className="flex items-center justify-between rounded border p-3">
+                  <div>
+                    <span className="font-medium">{b.name}</span>
+                    <span className="ml-2 text-sm text-muted-foreground">{b.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="outline">{b.services?.name}</Badge>
+                    <span>{b.startTime.slice(0, 5)}-{b.endTime.slice(0, 5)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

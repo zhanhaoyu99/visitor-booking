@@ -2,8 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const jwtSecret = process.env.ADMIN_JWT_SECRET;
-if (!jwtSecret) {
+if (!jwtSecret && typeof globalThis !== "undefined" && !(globalThis as Record<string, unknown>).__jwt_warned) {
   console.warn("WARNING: ADMIN_JWT_SECRET is not set. Please set it in your environment variables.");
+  (globalThis as Record<string, unknown>).__jwt_warned = true;
 }
 const SECRET = new TextEncoder().encode(jwtSecret || "please-set-ADMIN_JWT_SECRET-env-var");
 const COOKIE_NAME = "admin_token";

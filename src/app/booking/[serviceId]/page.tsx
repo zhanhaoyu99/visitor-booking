@@ -33,14 +33,21 @@ export default function BookingPage() {
     note: "",
   });
 
+  const [notFound, setNotFound] = useState(false);
+
   // Load service info
   useEffect(() => {
     fetch("/api/services")
       .then((r) => r.json())
       .then((services: Service[]) => {
         const s = services.find((s) => s.id === serviceId);
-        setService(s ?? null);
-      });
+        if (s) {
+          setService(s);
+        } else {
+          setNotFound(true);
+        }
+      })
+      .catch(() => setNotFound(true));
   }, [serviceId]);
 
   // Generate next 14 days
@@ -109,6 +116,15 @@ export default function BookingPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (notFound) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">未找到该服务</p>
+        <Button variant="outline" onClick={() => router.push("/")}>返回首页</Button>
+      </main>
+    );
   }
 
   if (!service) {
