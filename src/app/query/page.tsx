@@ -43,7 +43,11 @@ export default function QueryPage() {
   async function handleCancel(bookingId: string) {
     if (!confirm("确定要取消这个预约吗？")) return;
 
-    const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: "POST" });
+    const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: bookings.find(b => b.id === bookingId)?.phone }),
+    });
     const data = await res.json();
     if (!res.ok) {
       toast.error(data.error);

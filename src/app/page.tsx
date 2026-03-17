@@ -22,7 +22,7 @@ export default async function HomePage() {
         {services.length === 0 ? (
           <p className="text-center text-muted-foreground">暂无可预约的服务</p>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-4">
             {services.map((service) => (
               <Link key={service.id} href={`/booking/${service.id}`}>
                 <Card className="cursor-pointer transition-shadow hover:shadow-md">
