@@ -73,6 +73,10 @@ export default function SpecialDatesPage() {
 
   async function addOverride(e: React.FormEvent) {
     e.preventDefault();
+    if (overrideForm.startTime >= overrideForm.endTime) {
+      toast.error("结束时间必须晚于开始时间");
+      return;
+    }
     const res = await fetch("/api/admin/date-overrides", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

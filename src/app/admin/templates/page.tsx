@@ -35,6 +35,10 @@ export default function TemplatesPage() {
   }, [selectedServiceId]);
 
   async function handleAdd() {
+    if (newSlot.startTime >= newSlot.endTime) {
+      toast.error("结束时间必须晚于开始时间");
+      return;
+    }
     const res = await fetch("/api/admin/templates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
