@@ -1,9 +1,11 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET || "fallback-secret-change-me"
-);
+const jwtSecret = process.env.ADMIN_JWT_SECRET;
+if (!jwtSecret) {
+  console.warn("WARNING: ADMIN_JWT_SECRET is not set. Please set it in your environment variables.");
+}
+const SECRET = new TextEncoder().encode(jwtSecret || "please-set-ADMIN_JWT_SECRET-env-var");
 const COOKIE_NAME = "admin_token";
 
 export async function signAdminToken(): Promise<string> {

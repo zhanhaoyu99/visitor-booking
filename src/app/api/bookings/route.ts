@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomInt } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -9,8 +10,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "缺少必填字段" }, { status: 400 });
   }
 
+  if (name.length > 50) {
+    return NextResponse.json({ error: "姓名不能超过50个字符" }, { status: 400 });
+  }
+  if (id_number && !/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/.test(id_number)) {
+    return NextResponse.json({ error: "请输入有效的身份证号" }, { status: 400 });
+  }
+
   if (!/^1\d{10}$/.test(phone)) {
     return NextResponse.json({ error: "请输入有效的手机号" }, { status: 400 });
+  }
+
+  // Validate booking date is not in the past and within 14-day window
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const bookingDateObj = new Date(booking_date + "T00:00:00");
+  if (bookingDateObj <= today) {
+    return NextResponse.json({ error: "不能预约今天或过去的日期" }, { status: 400 });
+  }
+  const maxDate = new Date(today);
+  maxDate.setDate(maxDate.getDate() + 15);
+  if (bookingDateObj >= maxDate) {
+    return NextResponse.json({ error: "只能预约未来14天内的日期" }, { status: 400 });
   }
 
   try {
@@ -81,11 +102,8 @@ export async function POST(request: NextRequest) {
 
       if (booked >= capacity) throw new Error("SLOT_FULL");
 
-      // Generate booking code
-      const bookingCode =
-        booking_date.replace(/-/g, "") +
-        "-" +
-        String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+      // Generate booking code with retry on collision
+      const bookingCode = await generateUniqueCode(tx, booking_date);
 
       // Create booking
       const booking = await tx.booking.create({
@@ -118,6 +136,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "您在该日期已有预约" }, { status: 409 });
     return NextResponse.json({ error: "预约失败，请稍后重试" }, { status: 500 });
   }
+}
+
+async function generateUniqueCode(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  bookingDate: string
+): Promise<string> {
+  const prefix = bookingDate.replace(/-/g, "");
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const suffix = String(randomInt(0, 10000)).padStart(4, "0");
+    const code = `${prefix}-${suffix}`;
+    const existing = await tx.booking.findUnique({ where: { bookingCode: code } });
+    if (!existing) return code;
+  }
+  // Fallback: use 6-digit suffix for uniqueness
+  const suffix = String(randomInt(0, 1000000)).padStart(6, "0");
+  return `${prefix}-${suffix}`;
 }
 
 function hashCode(s: string): number {
