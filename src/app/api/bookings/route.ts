@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       if (override) {
         capacity = override.capacity;
       } else {
-        const dayOfWeek = new Date(booking_date).getDay();
+        const dayOfWeek = new Date(booking_date + "T00:00:00").getDay();
         const template = await tx.timeSlotTemplate.findFirst({
           where: {
             serviceId: service_id,

@@ -33,7 +33,7 @@ export async function GET(
   if (overrides.length > 0) {
     rawSlots = overrides;
   } else {
-    const dayOfWeek = new Date(date).getDay();
+    const dayOfWeek = new Date(date + "T00:00:00").getDay();
     const templates = await prisma.timeSlotTemplate.findMany({
       where: { serviceId, dayOfWeek },
       orderBy: { startTime: "asc" },

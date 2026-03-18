@@ -20,6 +20,14 @@ export async function POST(
       return NextResponse.json({ error: "手机号不匹配" }, { status: 403 });
     }
 
+    // Check if booking date has passed
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(booking.bookingDate + "T00:00:00");
+    if (bookingDate < today) {
+      return NextResponse.json({ error: "已过期的预约无法取消" }, { status: 400 });
+    }
+
     await prisma.booking.update({
       where: { id },
       data: { status: "cancelled" },

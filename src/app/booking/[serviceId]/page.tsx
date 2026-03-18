@@ -171,10 +171,10 @@ export default function BookingPage() {
                 onClick={() => handleDateSelect(date)}
               >
                 <span className="text-sm font-medium">
-                  {format(new Date(date), "M月d日")}
+                  {format(new Date(date + "T00:00:00"), "M月d日")}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {format(new Date(date), "EEEE", { locale: zhCN })}
+                  {format(new Date(date + "T00:00:00"), "EEEE", { locale: zhCN })}
                 </span>
               </Button>
             ))}
@@ -185,7 +185,7 @@ export default function BookingPage() {
         {step === "slot" && (
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
-              {format(new Date(selectedDate), "yyyy年M月d日 EEEE", { locale: zhCN })}
+              {format(new Date(selectedDate + "T00:00:00"), "yyyy年M月d日 EEEE", { locale: zhCN })}
               <Button
                 variant="link"
                 className="ml-2 h-auto p-0"
@@ -236,7 +236,7 @@ export default function BookingPage() {
         {step === "info" && selectedSlot && (
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
-              {format(new Date(selectedDate), "yyyy年M月d日 EEEE", { locale: zhCN })}{" "}
+              {format(new Date(selectedDate + "T00:00:00"), "yyyy年M月d日 EEEE", { locale: zhCN })}{" "}
               {selectedSlot.start_time.slice(0, 5)} - {selectedSlot.end_time.slice(0, 5)}
               <Button
                 variant="link"

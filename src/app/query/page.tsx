@@ -132,14 +132,15 @@ export default function QueryPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(booking.bookingDate), "yyyy年M月d日")}{" "}
+                      {format(new Date(booking.bookingDate + "T00:00:00"), "yyyy年M月d日")}{" "}
                       {booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       预约编号：{booking.bookingCode}
                     </p>
                   </div>
-                  {booking.status === "confirmed" && (
+                  {booking.status === "confirmed" &&
+                    new Date(booking.bookingDate + "T00:00:00") >= new Date(new Date().toDateString()) && (
                     <Button
                       variant="destructive"
                       size="sm"

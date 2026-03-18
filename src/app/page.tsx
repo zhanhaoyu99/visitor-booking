@@ -20,7 +20,14 @@ export default async function HomePage() {
         </div>
 
         {services.length === 0 ? (
-          <p className="text-center text-muted-foreground">暂无可预约的服务</p>
+          <div className="text-center">
+            <p className="text-muted-foreground">暂无可预约的服务</p>
+            <Link href="/admin">
+              <Button variant="link" className="mt-2 text-xs text-muted-foreground">
+                管理员入口
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="grid gap-4">
             {services.map((service) => (
